@@ -1,3 +1,6 @@
+import 'package:dartz/dartz.dart';
+import 'package:flutter_testes/core/error/exceptions.dart';
+import 'package:flutter_testes/core/error/failures.dart';
 import 'package:flutter_testes/core/platform/network_info.dart';
 import 'package:flutter_testes/features/number_trivia/data/datasources/number_trivia_local_data_source.dart';
 import 'package:flutter_testes/features/number_trivia/data/datasources/number_trivia_remote_data_source.dart';
@@ -60,9 +63,39 @@ void main() {
           when(mockRemoteDataSource.getConcreteNumberTrivia(any))
               .thenAnswer((_) async => tNumberTriviaModel);
           // act
-          repository.getConcreteNumberTrivia(tNumber);
+          final result = await repository.getConcreteNumberTrivia(tNumber);
           // assert
-          verify(mockNetworkInfo.isConnected);
+          verify(mockRemoteDataSource.getConcreteNumberTrivia(tNumber));
+          expect(result, equals(Right(tNumberTrivia)));
+        },
+      );
+
+      test(
+        'should cache the data locally when the call to remote data source is successful',
+        () async {
+          // arrange
+          when(mockRemoteDataSource.getConcreteNumberTrivia(any))
+              .thenAnswer((_) async => tNumberTriviaModel);
+          // act
+          await repository.getConcreteNumberTrivia(tNumber);
+          // assert
+          verify(mockRemoteDataSource.getConcreteNumberTrivia(tNumber));
+          verify(mockLocalDataSource.cacheNumberTrivia(tNumberTriviaModel));
+        },
+      );
+
+      test(
+        'should return server failure when the call to remote data source is unsuccessful',
+        () async {
+          // arrange
+          when(mockRemoteDataSource.getConcreteNumberTrivia(any))
+              .thenThrow(ServerException());
+          // act
+          final result = await repository.getConcreteNumberTrivia(tNumber);
+          // assert
+          verify(mockRemoteDataSource.getConcreteNumberTrivia(tNumber));
+          verifyZeroInteractions(mockLocalDataSource);
+          expect(result, equals(Left(ServerFailure())));
         },
       );
     });
