@@ -1,7 +1,9 @@
 import 'package:flutter_testes/core/platform/network_info.dart';
 import 'package:flutter_testes/features/number_trivia/data/datasources/number_trivia_local_data_source.dart';
 import 'package:flutter_testes/features/number_trivia/data/datasources/number_trivia_remote_data_source.dart';
+import 'package:flutter_testes/features/number_trivia/data/models/number_trivia_model.dart';
 import 'package:flutter_testes/features/number_trivia/data/repositories/number_trivia_repository_impl.dart';
+import 'package:flutter_testes/features/number_trivia/domain/entities/number_trivia.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,5 +29,48 @@ void main() {
       localDataSource: mockLocalDataSource,
       networkInfo: mockNetworkInfo,
     );
+  });
+
+  group('getConcreteNumberTrivia', () {
+    final tNumber = 1;
+    final tNumberTriviaModel =
+        NumberTriviaModel(number: tNumber, text: 'test trivia');
+    final NumberTrivia tNumberTrivia = tNumberTriviaModel;
+    test(
+      'should check if de device is online',
+      () async {
+        // arrange
+        when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+        // act
+        repository.getConcreteNumberTrivia(tNumber);
+        // assert
+        verify(mockNetworkInfo.isConnected);
+      },
+    );
+
+    group('device is online', () {
+      setUp(() {
+        when(mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+      });
+
+      test(
+        'should return remote data when the call to remote data source is successful',
+        () async {
+          // arrange
+          when(mockRemoteDataSource.getConcreteNumberTrivia(any))
+              .thenAnswer((_) async => tNumberTriviaModel);
+          // act
+          repository.getConcreteNumberTrivia(tNumber);
+          // assert
+          verify(mockNetworkInfo.isConnected);
+        },
+      );
+    });
+
+    group('device is offline', () {
+      setUp(() {
+        when(mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+      });
+    });
   });
 }
