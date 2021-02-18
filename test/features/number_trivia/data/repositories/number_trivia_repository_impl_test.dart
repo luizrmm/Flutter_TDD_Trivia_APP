@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_testes/core/error/exceptions.dart';
 import 'package:flutter_testes/core/error/failures.dart';
-import 'package:flutter_testes/core/platform/network_info.dart';
+import 'package:flutter_testes/core/network/network_info.dart';
+
 import 'package:flutter_testes/features/number_trivia/data/datasources/number_trivia_local_data_source.dart';
 import 'package:flutter_testes/features/number_trivia/data/datasources/number_trivia_remote_data_source.dart';
 import 'package:flutter_testes/features/number_trivia/data/models/number_trivia_model.dart';
